@@ -1,0 +1,97 @@
+openapi: "3.0.3"
+info:
+  title: "Servis Service API"
+  description: "Shranjevanje in branje podatkov o servisih avtomobila."
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8082/api/v1"
+
+paths:
+  /uporabnik/{uporabnikId}/avto/{avtoId}/servis:
+    parameters:
+      - $ref: '#/components/parameters/UporabnikId'
+      - $ref: '#/components/parameters/AvtoId'
+    post:
+      tags: [Servis]
+      summary: Posiljanje podatkov o servisu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServisInput'
+      responses:
+        '201':
+          description: Servis shranjen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servis'
+        '400':
+          description: Invalid input
+        '404':
+          description: User or car not found
+    get:
+      tags: [Servis]
+      summary: Branje podatkov o servisu
+      responses:
+        '200':
+          description: Seznam servisov
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Servis'
+        '404':
+          description: User or car not found
+
+components:
+  parameters:
+    UporabnikId:
+      name: uporabnikId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AvtoId:
+      name: avtoId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ServisInput:
+      type: object
+      required: [datum, tip]
+      properties:
+        datum:
+          type: string
+          format: date
+          example: '2026-10-15'
+        tip:
+          type: string
+          enum: [menjava_olja, pnevmatike, zavore, tehnicni_pregled, drugo]
+        kilometri:
+          type: integer
+          format: int64
+          example: 145000
+        strosek:
+          type: number
+          format: double
+          description: Strošek v EUR
+          example: 89.9
+        opis:
+          type: string
+          example: Menjava olja in filtra
+    Servis:
+      allOf:
+        - $ref: '#/components/schemas/ServisInput'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              format: uuid
